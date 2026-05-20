@@ -6,19 +6,16 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 public class MovingBackground {
     private Texture texture;
     private float x1, x2;
-    private float speed;
 
-    public MovingBackground(String texturePath) {
-        texture = new Texture(texturePath);
-        texture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
+    public MovingBackground(String path) {
+        texture = new Texture(path);
         x1 = 0;
         x2 = GameSettings.SCREEN_WIDTH;
-        speed = GameSettings.GAME_SPEED;
     }
 
     public void update(float delta) {
-        x1 -= speed * delta;
-        x2 -= speed * delta;
+        x1 -= GameSettings.GAME_SPEED * delta;
+        x2 -= GameSettings.GAME_SPEED * delta;
 
         if (x1 + GameSettings.SCREEN_WIDTH <= 0) {
             x1 = x2 + GameSettings.SCREEN_WIDTH;

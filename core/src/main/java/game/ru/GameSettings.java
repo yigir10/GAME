@@ -8,8 +8,9 @@ public class GameSettings {
     public static final int POSITION_ITERATIONS = 6;
     public static final float SCALE = 0.05f;
 
-    public static final int JETPACK_HEIGHT = 300;
-    public static final int JETPACK_WIDTH = 200;
+    // Параметры персонажа
+    public static final int JETPACK_HEIGHT = 180; // Сделал чуть меньше
+    public static final int JETPACK_WIDTH = 120;
     public static final short JETPACK_BIT = 2;
 
     public static final int BULLET_HEIGHT = 40;
@@ -17,10 +18,11 @@ public class GameSettings {
     public static final short BULLET_BIT = 4;
     public static final float BULLET_VELOCITY = 20f;
 
-    public static final float GRAVITY = -30f;
-    public static final float JUMP_FORCE = 0.8f;
+    // Физика
+    public static final float GRAVITY = -50f;     // Усилил гравитацию
+    public static final float JUMP_FORCE = 1.5f;  // Увеличил силу прыжка для компенсации
 
-    public static final float GAME_SPEED = 200f;
+    public static final float GAME_SPEED = 300f;  // Немного ускорил темп игры
 
     public static final int LASER_HEIGHT = 250;
     public static final int LASER_WIDTH = 50;

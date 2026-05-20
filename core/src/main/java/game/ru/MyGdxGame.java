@@ -12,7 +12,6 @@ import com.badlogic.gdx.physics.box2d.World;
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class MyGdxGame extends Game {
     public World world;
-    private GameScreen gameScreen;
     public SpriteBatch batch;
     public Vector3 touch;
     public OrthographicCamera camera;
@@ -24,11 +23,12 @@ public class MyGdxGame extends Game {
         world = new World(new Vector2(0, GameSettings.GRAVITY), true);
         batch = new SpriteBatch();
         camera = new OrthographicCamera();
-        camera.setToOrtho(false,720,1280);
+        camera.setToOrtho(false, GameSettings.SCREEN_WIDTH, GameSettings.SCREEN_HEIGHT);
         touch = new Vector3();
-        gameScreen = new GameScreen(this);
-        setScreen(gameScreen);
+
+        setScreen(new MenuScreen(this));
     }
+
     public void stepWorld() {
         float delta = Gdx.graphics.getDeltaTime();
         accumulator += delta;
@@ -37,5 +37,12 @@ public class MyGdxGame extends Game {
             accumulator -= GameSettings.STEP_TIME;
             world.step(GameSettings.STEP_TIME, GameSettings.VELOCITY_ITERATIONS, GameSettings.POSITION_ITERATIONS);
         }
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        if (batch != null) batch.dispose();
+        if (world != null) world.dispose();
     }
 }
