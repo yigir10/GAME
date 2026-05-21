@@ -5,20 +5,37 @@ import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 public class GameOverScreen extends ScreenAdapter {
     private final MyGdxGame game;
     private final int score;
     private final Texture background;
+    private final Texture retryButton;
+    private final Rectangle retryButtonBounds;
     private final BitmapFont font;
+    private final GlyphLayout layout;
 
     public GameOverScreen(MyGdxGame game, int score) {
         this.game = game;
         this.score = score;
         this.background = new Texture(GameResources.MENU_BACKGROUND_PATH);
-        this.font = new BitmapFont();
-        this.font.getData().setScale(3);
+        this.retryButton = new Texture(GameResources.RETRY_BUTTON_PATH);
+
+        float btnWidth = 350;
+        float btnHeight = 120;
+        this.retryButtonBounds = new Rectangle(
+            GameSettings.SCREEN_WIDTH / 2f - btnWidth / 2f,
+            GameSettings.SCREEN_HEIGHT * 0.35f,
+            btnWidth,
+            btnHeight
+        );
+
+        // Используем FontBuilder для создания шрифта
+        this.font = FontBuilder.buildFont(1.0f, Color.WHITE);
+        this.layout = new GlyphLayout();
     }
 
     @Override
@@ -29,19 +46,41 @@ public class GameOverScreen extends ScreenAdapter {
 
         game.batch.begin();
         game.batch.draw(background, 0, 0, GameSettings.SCREEN_WIDTH, GameSettings.SCREEN_HEIGHT);
-        font.draw(game.batch, "GAME OVER", GameSettings.SCREEN_WIDTH / 2f - 150, GameSettings.SCREEN_HEIGHT * 0.7f);
-        font.draw(game.batch, "SCORE: " + score, GameSettings.SCREEN_WIDTH / 2f - 100, GameSettings.SCREEN_HEIGHT * 0.5f);
-        font.draw(game.batch, "TAP TO RESTART", GameSettings.SCREEN_WIDTH / 2f - 180, GameSettings.SCREEN_HEIGHT * 0.3f);
+
+        // Заголовок "GAME OVER"
+        // Используем FontBuilder для масштабирования с компенсацией растяжения
+        FontBuilder.setScale(font, 4.0f);
+        layout.setText(font, "GAME OVER");
+        font.draw(game.batch, layout, GameSettings.SCREEN_WIDTH / 2f - layout.width / 2f, GameSettings.SCREEN_HEIGHT * 0.75f);
+
+        // Отображение счета
+        FontBuilder.setScale(font, 2.5f);
+        layout.setText(font, "SCORE: " + score);
+        font.draw(game.batch, layout, GameSettings.SCREEN_WIDTH / 2f - layout.width / 2f, GameSettings.SCREEN_HEIGHT * 0.6f);
+
+        // Кнопка рестарта
+        game.batch.draw(retryButton, retryButtonBounds.x, retryButtonBounds.y, retryButtonBounds.width, retryButtonBounds.height);
         game.batch.end();
 
         if (Gdx.input.justTouched()) {
-            game.setScreen(new GameScreen(game));
+            game.touch.set(Gdx.input.getX(), Gdx.input.getY(), 0);
+            game.camera.unproject(game.touch);
+
+            if (retryButtonBounds.contains(game.touch.x, game.touch.y)) {
+                game.setScreen(new GameScreen(game));
+            }
         }
+    }
+
+    @Override
+    public void hide() {
+        dispose();
     }
 
     @Override
     public void dispose() {
         background.dispose();
+        retryButton.dispose();
         font.dispose();
     }
 }

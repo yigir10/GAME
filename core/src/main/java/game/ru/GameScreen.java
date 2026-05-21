@@ -45,8 +45,9 @@ public class GameScreen extends ScreenAdapter {
         this.lasers = new ArrayList<>();
         this.textures = new ArrayList<>();
         this.gameSession = new GameSession();
-        this.font = new BitmapFont();
-        this.font.getData().setScale(2.5f);
+
+        // Используем FontBuilder для создания шрифта с компенсацией растяжения
+        this.font = FontBuilder.buildFont(2.5f, Color.WHITE);
 
         // Создаем overlay программно, так как файл отсутствует
         Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
@@ -195,7 +196,7 @@ public class GameScreen extends ScreenAdapter {
         }
 
         if (isPaused) {
-            myGdxGame.batch.setColor(0, 0, 0, 0.7f); // Сделаем затемнение черным
+            myGdxGame.batch.setColor(0, 0, 0, 0.7f);
             myGdxGame.batch.draw(pauseOverlay, 0, 0, GameSettings.SCREEN_WIDTH, GameSettings.SCREEN_HEIGHT);
             myGdxGame.batch.setColor(Color.WHITE);
             myGdxGame.batch.draw(resumeBtn, resumeRect.x, resumeRect.y, resumeRect.width, resumeRect.height);
