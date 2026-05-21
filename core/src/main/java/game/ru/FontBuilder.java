@@ -7,7 +7,7 @@ public class FontBuilder {
     // Коэффициенты компенсации для типичного растяжения (сужаем по X и вытягиваем по Y)
     // Увеличиваем Y относительно X, чтобы убрать эффект растянутости по горизонтали на мониторах
     private static final float COMP_X = 1.0f;
-    private static final float COMP_Y = 2.2f;
+    private static final float COMP_Y = 2.0f;
 
     public static BitmapFont buildFont(float baseScale, Color color) {
         BitmapFont font = new BitmapFont();
@@ -18,9 +18,5 @@ public class FontBuilder {
 
     public static void setScale(BitmapFont font, float baseScale) {
         font.getData().setScale(baseScale * COMP_X, baseScale * COMP_Y);
-    }
-
-    public static void setScale(BitmapFont font, float scaleX, float scaleY) {
-        font.getData().setScale(scaleX * COMP_X, scaleY * COMP_Y);
     }
 }
