@@ -73,14 +73,20 @@ public class MenuScreen extends ScreenAdapter {
         game.batch.draw(quitButton, quitButtonBounds.x, quitButtonBounds.y, quitButtonBounds.width, quitButtonBounds.height);
         game.batch.draw(settingsButton, settingsButtonBounds.x, settingsButtonBounds.y, settingsButtonBounds.width, settingsButtonBounds.height);
 
-        // Монеты
-        game.batch.draw(coinIcon, 30, GameSettings.SCREEN_HEIGHT - 120, 50, 50);
-        font.draw(game.batch, ": " + GameState.getTotalCoins(), 90, GameSettings.SCREEN_HEIGHT - 80);
+        // --- ИСПРАВЛЕНИЕ ЛЕВОГО ВЕРХНЕГО УГЛА ---
 
-        // Рекорд
+        // 1. Рекорд (верхняя строка)
         font.setColor(Color.GOLD);
-        font.draw(game.batch, "BEST: " + GameState.getHighScore() + "m", 30, GameSettings.SCREEN_HEIGHT - 30);
+        font.draw(game.batch, "BEST: " + GameState.getHighScore() + "m", 30, GameSettings.SCREEN_HEIGHT - 40);
+
+        // 2. Монеты (вторая строка, опускаем ниже чтобы не было наложения)
+        float coinY = GameSettings.SCREEN_HEIGHT - 160;
+        // Иконка (55x55). Выравниваем по центру текста: Y_текста - Высота_текста/2 - Высота_иконки/2
+        // С учетом вертикального растяжения Cap Height шрифта (75px), опускаем иконку на 65px от верха текста
+        game.batch.draw(coinIcon, 30, coinY - 65, 55, 55);
         font.setColor(Color.WHITE);
+        font.draw(game.batch, ": " + GameState.getTotalCoins(), 95, coinY);
+
         game.batch.end();
 
         if (Gdx.input.justTouched()) {

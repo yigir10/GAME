@@ -17,6 +17,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.badlogic.gdx.utils.Timer;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -290,6 +291,17 @@ public class GameScreen extends ScreenAdapter {
         }
 
         stepWorld(delta);
+
+        if (jetPackObject.isDead && !gameSession.isGameOver) {
+            gameSession.isGameOver = true;
+            if (backgroundMusic != null) backgroundMusic.stop();
+            Timer.schedule(new Timer.Task() {
+                @Override
+                public void run() {
+                    myGdxGame.setScreen(new GameOverScreen(myGdxGame, gameSession.distance, gameSession.coins));
+                }
+            }, 1.5f);
+        }
     }
 
     private void handleInput() {
@@ -336,10 +348,16 @@ public class GameScreen extends ScreenAdapter {
             font.draw(myGdxGame.batch, ft.text, ft.x, ft.y);
         }
 
+        // --- ИСПРАВЛЕНИЕ ЛЕВОГО ВЕРХНЕГО УГЛА ---
         font.setColor(Color.WHITE);
-        font.draw(myGdxGame.batch, "Distance: " + gameSession.distance + "m", 50, GameSettings.SCREEN_HEIGHT - 50);
-        myGdxGame.batch.draw(coinIcon, 50, GameSettings.SCREEN_HEIGHT - 160, 60, 60);
-        font.draw(myGdxGame.batch, ": " + gameSession.coins, 120, GameSettings.SCREEN_HEIGHT - 110);
+        // 1. Дистанция (верхняя строка)
+        font.draw(myGdxGame.batch, "Distance: " + gameSession.distance + "m", 30, GameSettings.SCREEN_HEIGHT - 50);
+
+        // 2. Монеты сессии (вторая строка, отступ 100 пикселей)
+        float coinTextY = GameSettings.SCREEN_HEIGHT - 150;
+        // Иконка (50x50). Центрируем: Y_текста - 37 (центр текста) - 25 (половина иконки) = -62
+        myGdxGame.batch.draw(coinIcon, 30, coinTextY - 62, 50, 50);
+        font.draw(myGdxGame.batch, ": " + gameSession.coins, 95, coinTextY);
 
         myGdxGame.batch.draw(pauseBtnTex, pauseBtnRect.x, pauseBtnRect.y, pauseBtnRect.width, pauseBtnRect.height);
 

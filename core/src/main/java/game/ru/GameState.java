@@ -3,23 +3,46 @@ package game.ru;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
 
+/**
+ * Класс GameState управляет глобальным состоянием игры и сохранениями.
+ *
+ * Описание улучшений (Upgrades):
+ * - jump_level: Увеличивает силу импульса джетпака, позволяя быстрее взлетать.
+ * - coin_level: Увеличивает множитель золота, получаемого за каждую монету.
+ * - magnet_level: Увеличивает радиус автоматического притяжения монет к игроку.
+ * - shield_level: Добавляет дополнительные заряды энергощита (жизни).
+ *
+ * Все данные записываются в файл "game_prefs" через Preferences (системное хранилище LibGDX),
+ * которое автоматически синхронизирует данные с локальной файловой системой (Gdx.files).
+ */
 public class GameState {
+    // Имя файла настроек на диске: в Windows это %USERPROFILE%/.prefs/game_prefs
     private static final String PREFS_NAME = "game_prefs";
+
+    // --- КЛЮЧИ СОХРАНЕНИЯ (имена переменных внутри файла) ---
+
+    // Общий баланс монет игрока
     private static final String KEY_COINS = "total_coins";
-    private static final String KEY_JUMP_LEVEL = "jump_level";
-    private static final String KEY_COIN_LEVEL = "coin_level";
-    private static final String KEY_MAGNET_LEVEL = "magnet_level";
-    private static final String KEY_SHIELD_LEVEL = "shield_level";
-    private static final String KEY_HIGH_SCORE = "high_score";
 
-    private static final String KEY_SOUND_ON = "sound_on";
-    private static final String KEY_MUSIC_ON = "music_on";
+    // Ключи улучшений (соответствуют кнопкам в магазине):
+    private static final String KEY_JUMP_LEVEL = "jump_level";       // Кнопка "ДЖЕТПАК": Сила импульса при взлете
+    private static final String KEY_COIN_LEVEL = "coin_level";       // Кнопка "МОНЕТЫ": Бонус к множителю золота за каждую монету
+    private static final String KEY_MAGNET_LEVEL = "magnet_level";   // Кнопка "МАГНИТ": Радиус притяжения монет к игроку
+    private static final String KEY_SHIELD_LEVEL = "shield_level";   // Кнопка "ЩИТ": Количество защитных зарядов (жизней)
 
-    private static final String KEY_MISSION_DISTANCE_TARGET = "m_dist_target";
-    private static final String KEY_MISSION_COINS_TARGET = "m_coin_target";
+    private static final String KEY_HIGH_SCORE = "high_score";       // Максимальная дистанция за всё время (рекорд)
+
+    private static final String KEY_SOUND_ON = "sound_on";           // Настройка: Включены ли звуки
+    private static final String KEY_MUSIC_ON = "music_on";           // Настройка: Включена ли музыка
+
+    private static final String KEY_MISSION_DISTANCE_TARGET = "m_dist_target"; // Цель миссии на дистанцию (в метрах)
+    private static final String KEY_MISSION_COINS_TARGET = "m_coin_target";     // Цель миссии на сбор монет
 
     private static Preferences prefs;
 
+    /**
+     * Метод для доступа к хранилищу. Инициализирует Preferences при первом вызове.
+     */
     private static Preferences getPrefs() {
         if (prefs == null) {
             prefs = Gdx.app.getPreferences(PREFS_NAME);
@@ -27,21 +50,29 @@ public class GameState {
         return prefs;
     }
 
+    /**
+     * Сбрасывает весь прогресс, полностью очищая файл Preferences.
+     */
     public static void resetProgress() {
         getPrefs().clear();
-        getPrefs().flush();
+        getPrefs().flush(); // flush() физически записывает изменения в файл на диск
     }
 
-    // Настройки звука
+    // --- Настройки звука и музыки ---
     public static boolean isSoundOn() { return getPrefs().getBoolean(KEY_SOUND_ON, true); }
     public static void setSoundOn(boolean on) { getPrefs().putBoolean(KEY_SOUND_ON, on); getPrefs().flush(); }
 
     public static boolean isMusicOn() { return getPrefs().getBoolean(KEY_MUSIC_ON, true); }
     public static void setMusicOn(boolean on) { getPrefs().putBoolean(KEY_MUSIC_ON, on); getPrefs().flush(); }
 
+    // --- Управление монетами ---
     public static int getTotalCoins() { return getPrefs().getInteger(KEY_COINS, 0); }
     public static void addCoins(int amount) { getPrefs().putInteger(KEY_COINS, getTotalCoins() + amount); getPrefs().flush(); }
 
+    /**
+     * Проверяет баланс и списывает монеты (например, при покупке улучшения).
+     * Результат сразу сохраняется в файл.
+     */
     public static boolean spendCoins(int amount) {
         int current = getTotalCoins();
         if (current >= amount) {
@@ -52,6 +83,7 @@ public class GameState {
         return false;
     }
 
+    // --- Рекорды и Миссии ---
     public static int getHighScore() { return getPrefs().getInteger(KEY_HIGH_SCORE, 0); }
     public static void updateHighScore(int score) {
         if (score > getHighScore()) {
@@ -75,6 +107,7 @@ public class GameState {
         getPrefs().flush();
     }
 
+    // --- Логика Улучшений (Upgrades) ---
     public static int getUpgradeCost(int level, int baseCost) {
         return baseCost + (level * (baseCost / 2));
     }

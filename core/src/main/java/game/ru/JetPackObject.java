@@ -16,6 +16,7 @@ public class JetPackObject extends GameObject {
     public int shieldCharges = 0;
     private final ShapeRenderer shapeRenderer;
     private boolean isFlying = false;
+    public boolean isDead = false;
 
     public JetPackObject(int x, int y, int width, int height, Animation<TextureRegion> animation, World world, GameScreen gameScreen) {
         super(animation.getKeyFrame(0).getTexture(), x, y, width, height, GameSettings.JETPACK_BIT, world, false, 0.6f, 1.0f, (short)(GameSettings.BOUNDS_BIT | GameSettings.LASER_BIT | GameSettings.COIN_BIT));
@@ -30,6 +31,7 @@ public class JetPackObject extends GameObject {
     }
 
     public void fly() {
+        if (isDead) return;
         isFlying = true;
         float bonus = GameState.getJumpLevel() * 0.15f;
         float impulse = body.getMass() * (GameSettings.JUMP_FORCE + bonus);
@@ -81,6 +83,7 @@ public class JetPackObject extends GameObject {
 
     @Override
     public void hit(GameObject other) {
+        if (isDead) return;
         if (other instanceof LaserObject || other instanceof RocketObject) {
             boolean isActive = (other instanceof LaserObject) ? ((LaserObject)other).active : ((RocketObject)other).active;
             if (isActive) {
@@ -90,7 +93,7 @@ public class JetPackObject extends GameObject {
                     else ((RocketObject)other).active = false;
                     gameScreen.triggerFlash(); // Эффект вспышки в GameScreen
                 } else {
-                    gameScreen.gameOver();
+                    isDead = true;
                 }
             }
         }
