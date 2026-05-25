@@ -2,12 +2,15 @@ package game.ru;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
@@ -24,32 +27,59 @@ public class GameScreen extends ScreenAdapter {
     private final JetPackObject jetPackObject;
     private final MovingBackground movingBackground;
     private final ArrayList<LaserObject> lasers;
+    private final ArrayList<CoinObject> coins;
+    private final ArrayList<RocketObject> rockets;
     private final GameSession gameSession;
+    private final ShapeRenderer shapeRenderer;
+
+    private static class FloatingText {
+        String text;
+        float x, y, life = 1.0f;
+        Color color = Color.YELLOW;
+        FloatingText(String t, float x, float y) { this.text = t; this.x = x; this.y = y; }
+        FloatingText(String t, float x, float y, Color c) { this.text = t; this.x = x; this.y = y; this.color = c; }
+    }
+    private final ArrayList<FloatingText> floatingTexts = new ArrayList<>();
 
     private float laserTimer = 0;
-    private final float laserSpawnInterval = 2.0f;
+    private float coinTimer = 0;
+    private float rocketTimer = 0;
+
     private float accumulator = 0;
-    private float scoreTimer = 0;
+    private float distanceTimer = 0;
+    private float currentSpeed;
+    private float flashTimer = 0;
 
     private boolean isPaused = false;
-    private final Texture pauseOverlay, pauseBtnTex, resumeBtn, retryBtn, menuBtn;
+    private final Texture pauseOverlay, pauseBtnTex, resumeBtn, retryBtn, menuBtn, coinIcon, warningIcon;
     private final Rectangle resumeRect, retryRect, menuRect, pauseBtnRect;
 
     private final BitmapFont font;
     private final Animation<TextureRegion> laserAnimation;
+    private final Animation<TextureRegion> coinAnimation;
+    private final Animation<TextureRegion> rocketAnimation;
     private final ArrayList<Texture> textures;
 
+    private Sound coinSound, hitSound, jumpSound, launchSound, warningSound;
+    private Music backgroundMusic;
+
     public GameScreen(MyGdxGame myGdxGame) {
+        this(myGdxGame, new GameSession());
+    }
+
+    public GameScreen(MyGdxGame myGdxGame, GameSession session) {
         this.myGdxGame = myGdxGame;
+        this.gameSession = session;
         this.world = new World(new Vector2(0, GameSettings.GRAVITY), true);
         this.lasers = new ArrayList<>();
+        this.coins = new ArrayList<>();
+        this.rockets = new ArrayList<>();
         this.textures = new ArrayList<>();
-        this.gameSession = new GameSession();
+        this.shapeRenderer = new ShapeRenderer();
+        this.currentSpeed = GameSettings.GAME_SPEED;
 
-        // Используем FontBuilder для создания шрифта с компенсацией растяжения
         this.font = FontBuilder.buildFont(2.5f, Color.WHITE);
 
-        // Создаем overlay программно, так как файл отсутствует
         Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         pixmap.setColor(Color.WHITE);
         pixmap.fill();
@@ -60,12 +90,16 @@ public class GameScreen extends ScreenAdapter {
         resumeBtn = new Texture(GameResources.RESUME_BUTTON_PATH);
         retryBtn = new Texture(GameResources.RETRY_BUTTON_PATH);
         menuBtn = new Texture(GameResources.MAIN_MENU_BUTTON_PATH);
+        coinIcon = new Texture(GameResources.COIN_ICON_PATH);
+        warningIcon = new Texture(GameResources.WARNING_ICON_PATH);
 
         textures.add(pauseOverlay);
         textures.add(pauseBtnTex);
         textures.add(resumeBtn);
         textures.add(retryBtn);
         textures.add(menuBtn);
+        textures.add(coinIcon);
+        textures.add(warningIcon);
 
         float bw = 350, bh = 120;
         float centerX = GameSettings.SCREEN_WIDTH / 2f - bw / 2f;
@@ -74,14 +108,47 @@ public class GameScreen extends ScreenAdapter {
         menuRect = new Rectangle(centerX, 450, bw, bh);
         pauseBtnRect = new Rectangle(GameSettings.SCREEN_WIDTH - 120, GameSettings.SCREEN_HEIGHT - 120, 100, 100);
 
-        // Анимации
         laserAnimation = createAnimation(GameResources.LASER_ANIMATION_PATHS, 0.1f);
+        coinAnimation = createAnimation(GameResources.COIN_ANIMATION_PATHS, 0.08f);
+        rocketAnimation = createAnimation(GameResources.ROCKET_ANIMATION_PATHS, 0.07f);
         Animation<TextureRegion> jetPackAnimation = createAnimation(GameResources.JETPACK_ANIMATION_PATHS, 0.1f);
 
         jetPackObject = new JetPackObject(150, GameSettings.SCREEN_HEIGHT / 2, GameSettings.JETPACK_WIDTH, GameSettings.JETPACK_HEIGHT, jetPackAnimation, world, this);
         movingBackground = new MovingBackground(GameResources.BACKGROUND_IMG_PATH);
         new ContactManager(world);
         createBounds();
+
+        // Аудио
+        try {
+            coinSound = Gdx.audio.newSound(Gdx.files.internal(GameResources.SOUND_COIN));
+            hitSound = Gdx.audio.newSound(Gdx.files.internal(GameResources.SOUND_HIT));
+            jumpSound = Gdx.audio.newSound(Gdx.files.internal(GameResources.SOUND_JUMP));
+            launchSound = Gdx.audio.newSound(Gdx.files.internal(GameResources.SOUND_ROCKET_LAUNCH));
+            warningSound = Gdx.audio.newSound(Gdx.files.internal(GameResources.SOUND_ROCKET_WARNING));
+            backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal(GameResources.MUSIC_MAIN));
+            backgroundMusic.setLooping(true);
+        } catch (Exception e) {
+            Gdx.app.log("GameScreen", "Audio resources missing");
+        }
+    }
+
+    @Override
+    public void show() {
+        if (GameState.isMusicOn() && backgroundMusic != null) {
+            backgroundMusic.play();
+        }
+    }
+
+    @Override
+    public void hide() {
+        if (backgroundMusic != null) {
+            backgroundMusic.stop();
+        }
+    }
+
+    public void triggerFlash() {
+        flashTimer = 0.15f;
+        if (GameState.isSoundOn() && hitSound != null) hitSound.play();
     }
 
     private Animation<TextureRegion> createAnimation(String[] paths, float frameDuration) {
@@ -129,30 +196,99 @@ public class GameScreen extends ScreenAdapter {
     }
 
     private void update(float delta) {
-        movingBackground.update(delta);
+        currentSpeed = GameSettings.GAME_SPEED + (gameSession.distance / 1000f) * 20f;
+        movingBackground.update(delta, currentSpeed);
         jetPackObject.update(delta);
 
-        scoreTimer += delta;
-        if (scoreTimer >= 0.5f) {
-            gameSession.addScore(1);
-            scoreTimer = 0;
+        if (flashTimer > 0) flashTimer -= delta;
+
+        distanceTimer += delta;
+        if (distanceTimer >= 0.1f) {
+            gameSession.addDistance(1);
+            distanceTimer = 0;
+
+            if (gameSession.distance == GameState.getDistanceTarget()) {
+                GameState.completeDistanceMission();
+                floatingTexts.add(new FloatingText("MISSION COMPLETE: " + gameSession.distance + "m", GameSettings.SCREEN_WIDTH/2f - 200, GameSettings.SCREEN_HEIGHT/2f, Color.GREEN));
+            }
         }
 
         laserTimer += delta;
-        if (laserTimer >= laserSpawnInterval) {
+        if (laserTimer >= GameSettings.LASER_SPAWN_INTERVAL) {
             lasers.add(new LaserObject(GameSettings.SCREEN_WIDTH + 100, MathUtils.random(250, 1000), GameSettings.LASER_WIDTH, GameSettings.LASER_HEIGHT, laserAnimation, world));
             laserTimer = 0;
         }
 
-        Iterator<LaserObject> it = lasers.iterator();
-        while (it.hasNext()) {
-            LaserObject laser = it.next();
+        coinTimer += delta;
+        if (coinTimer >= GameSettings.COIN_SPAWN_INTERVAL) {
+            coins.add(new CoinObject(GameSettings.SCREEN_WIDTH + 100, MathUtils.random(250, 1000), GameSettings.COIN_WIDTH, GameSettings.COIN_HEIGHT, coinAnimation, world));
+            coinTimer = 0;
+        }
+
+        rocketTimer += delta;
+        if (rocketTimer >= GameSettings.ROCKET_SPAWN_INTERVAL) {
+            rockets.add(new RocketObject(jetPackObject.getY(), rocketAnimation, warningIcon, currentSpeed, world));
+            if (GameState.isSoundOn() && warningSound != null) warningSound.play();
+            rocketTimer = 0;
+        }
+
+        Iterator<LaserObject> laserIt = lasers.iterator();
+        while (laserIt.hasNext()) {
+            LaserObject laser = laserIt.next();
             laser.update(delta);
-            if (!laser.active) {
+            float x = laser.body.getPosition().x - currentSpeed * delta * GameSettings.SCALE;
+            laser.body.setTransform(x, laser.body.getPosition().y, 0);
+            if (!laser.active || laser.getX() < -laser.width) {
                 world.destroyBody(laser.body);
-                it.remove();
+                laserIt.remove();
             }
         }
+
+        Iterator<RocketObject> rocketIt = rockets.iterator();
+        Vector2 playerPosMeters = new Vector2(jetPackObject.body.getPosition());
+        while (rocketIt.hasNext()) {
+            RocketObject rocket = rocketIt.next();
+            boolean wasLaunched = rocket.isLaunched();
+            rocket.update(delta, playerPosMeters);
+            if (!wasLaunched && rocket.isLaunched()) {
+                if (GameState.isSoundOn() && launchSound != null) launchSound.play();
+            }
+            if (!rocket.active || rocket.getX() < -rocket.width) {
+                world.destroyBody(rocket.body);
+                rocketIt.remove();
+            }
+        }
+
+        Iterator<CoinObject> coinIt = coins.iterator();
+        while (coinIt.hasNext()) {
+            CoinObject coin = coinIt.next();
+            coin.update(delta, playerPosMeters);
+            if (!coin.active) {
+                if (coin.getX() >= -coin.width) {
+                    if (GameState.isSoundOn() && coinSound != null) coinSound.play();
+                    int amount = 1 + GameState.getCoinLevel();
+                    gameSession.addCoin(amount);
+                    GameState.addCoins(amount);
+                    floatingTexts.add(new FloatingText("+" + amount, jetPackObject.getX(), jetPackObject.getY() + 50));
+
+                    if (gameSession.coins == GameState.getCoinsTarget()) {
+                        GameState.completeCoinsMission();
+                        floatingTexts.add(new FloatingText("MISSION COMPLETE: " + gameSession.coins + " coins", GameSettings.SCREEN_WIDTH/2f - 200, GameSettings.SCREEN_HEIGHT/2f + 100, Color.GREEN));
+                    }
+                }
+                world.destroyBody(coin.body);
+                coinIt.remove();
+            }
+        }
+
+        Iterator<FloatingText> ftIt = floatingTexts.iterator();
+        while (ftIt.hasNext()) {
+            FloatingText ft = ftIt.next();
+            ft.life -= delta;
+            ft.y += 100 * delta;
+            if (ft.life <= 0) ftIt.remove();
+        }
+
         stepWorld(delta);
     }
 
@@ -169,6 +305,7 @@ public class GameScreen extends ScreenAdapter {
                 isPaused = true;
             } else if (!gameSession.isGameOver) {
                 jetPackObject.fly();
+                if (GameState.isSoundOn() && jumpSound != null) jumpSound.play(0.3f);
             }
         } else if (Gdx.input.isTouched() && !isPaused && !gameSession.isGameOver) {
             jetPackObject.fly();
@@ -176,8 +313,11 @@ public class GameScreen extends ScreenAdapter {
     }
 
     public void gameOver() {
+        if (GameState.isSoundOn() && hitSound != null) hitSound.play();
+        if (backgroundMusic != null) backgroundMusic.stop();
         gameSession.isGameOver = true;
-        myGdxGame.setScreen(new GameOverScreen(myGdxGame, gameSession.score));
+        GameState.updateHighScore(gameSession.distance);
+        myGdxGame.setScreen(new GameOverScreen(myGdxGame, gameSession.distance, gameSession.coins));
     }
 
     private void draw() {
@@ -187,38 +327,61 @@ public class GameScreen extends ScreenAdapter {
         myGdxGame.batch.begin();
         movingBackground.draw(myGdxGame.batch);
         for (LaserObject laser : lasers) laser.draw(myGdxGame.batch);
+        for (CoinObject coin : coins) coin.draw(myGdxGame.batch);
+        for (RocketObject rocket : rockets) rocket.draw(myGdxGame.batch);
         jetPackObject.draw(myGdxGame.batch);
 
-        font.draw(myGdxGame.batch, "Score: " + gameSession.score, 30, GameSettings.SCREEN_HEIGHT - 30);
+        for (FloatingText ft : floatingTexts) {
+            font.setColor(ft.color.r, ft.color.g, ft.color.b, ft.life);
+            font.draw(myGdxGame.batch, ft.text, ft.x, ft.y);
+        }
 
-        if (!isPaused) {
-            myGdxGame.batch.draw(pauseBtnTex, pauseBtnRect.x, pauseBtnRect.y, pauseBtnRect.width, pauseBtnRect.height);
+        font.setColor(Color.WHITE);
+        font.draw(myGdxGame.batch, "Distance: " + gameSession.distance + "m", 50, GameSettings.SCREEN_HEIGHT - 50);
+        myGdxGame.batch.draw(coinIcon, 50, GameSettings.SCREEN_HEIGHT - 160, 60, 60);
+        font.draw(myGdxGame.batch, ": " + gameSession.coins, 120, GameSettings.SCREEN_HEIGHT - 110);
+
+        myGdxGame.batch.draw(pauseBtnTex, pauseBtnRect.x, pauseBtnRect.y, pauseBtnRect.width, pauseBtnRect.height);
+
+        if (flashTimer > 0) {
+            myGdxGame.batch.setColor(1, 1, 1, flashTimer * 6f);
+            myGdxGame.batch.draw(pauseOverlay, 0, 0, GameSettings.SCREEN_WIDTH, GameSettings.SCREEN_HEIGHT);
+            myGdxGame.batch.setColor(Color.WHITE);
         }
 
         if (isPaused) {
-            myGdxGame.batch.setColor(0, 0, 0, 0.7f);
+            myGdxGame.batch.setColor(0, 0, 0, 0.5f);
             myGdxGame.batch.draw(pauseOverlay, 0, 0, GameSettings.SCREEN_WIDTH, GameSettings.SCREEN_HEIGHT);
             myGdxGame.batch.setColor(Color.WHITE);
+
             myGdxGame.batch.draw(resumeBtn, resumeRect.x, resumeRect.y, resumeRect.width, resumeRect.height);
             myGdxGame.batch.draw(retryBtn, retryRect.x, retryRect.y, retryRect.width, retryRect.height);
             myGdxGame.batch.draw(menuBtn, menuRect.x, menuRect.y, menuRect.width, menuRect.height);
         }
+
         myGdxGame.batch.end();
     }
 
     private void stepWorld(float delta) {
-        accumulator += delta;
-        while (accumulator >= GameSettings.STEP_TIME) {
-            accumulator -= GameSettings.STEP_TIME;
-            world.step(GameSettings.STEP_TIME, GameSettings.VELOCITY_ITERATIONS, GameSettings.POSITION_ITERATIONS);
+        accumulator += Math.min(delta, 0.25f);
+        while (accumulator >= 1 / 60f) {
+            world.step(1 / 60f, 6, 2);
+            accumulator -= 1 / 60f;
         }
     }
 
     @Override
     public void dispose() {
-        for (Texture t : textures) t.dispose();
-        font.dispose();
+        if (backgroundMusic != null) backgroundMusic.dispose();
+        if (coinSound != null) coinSound.dispose();
+        if (hitSound != null) hitSound.dispose();
+        if (launchSound != null) launchSound.dispose();
+        if (warningSound != null) warningSound.dispose();
+        if (jumpSound != null) jumpSound.dispose();
         world.dispose();
         movingBackground.dispose();
+        shapeRenderer.dispose();
+        jetPackObject.dispose();
+        for (Texture tex : textures) tex.dispose();
     }
 }

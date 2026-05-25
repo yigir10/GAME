@@ -25,9 +25,9 @@ public class ContactManager {
                     GameObject objA = (GameObject) dataA;
                     GameObject objB = (GameObject) dataB;
 
-                    // Вызываем метод hit у обоих объектов
-                    objA.hit();
-                    objB.hit();
+                    // Вызываем метод hit у обоих объектов, передавая соседа
+                    objA.hit(objB);
+                    objB.hit(objA);
                 }
             }
 

@@ -12,7 +12,6 @@ public class LaserObject extends GameObject {
     private float stateTime;
 
     public LaserObject(int x, int y, int width, int height, Animation<TextureRegion> animation, World world) {
-        // Инициализируем GameObject первым кадром анимации
         super(animation.getKeyFrame(0).getTexture(), x, y, width, height, GameSettings.LASER_BIT, world, true, 0.3f, 0.8f, GameSettings.JETPACK_BIT);
         this.animation = animation;
         this.stateTime = 0;
@@ -22,12 +21,6 @@ public class LaserObject extends GameObject {
 
     public void update(float delta) {
         stateTime += delta;
-        float x = body.getPosition().x - GameSettings.GAME_SPEED * delta * GameSettings.SCALE;
-        body.setTransform(x, body.getPosition().y, 0);
-
-        if (getX() < -width) {
-            active = false;
-        }
     }
 
     @Override

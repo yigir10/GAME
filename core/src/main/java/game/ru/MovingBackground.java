@@ -13,9 +13,9 @@ public class MovingBackground {
         x2 = GameSettings.SCREEN_WIDTH;
     }
 
-    public void update(float delta) {
-        x1 -= GameSettings.GAME_SPEED * delta;
-        x2 -= GameSettings.GAME_SPEED * delta;
+    public void update(float delta, float speed) {
+        x1 -= speed * delta;
+        x2 -= speed * delta;
 
         if (x1 + GameSettings.SCREEN_WIDTH <= 0) {
             x1 = x2 + GameSettings.SCREEN_WIDTH;

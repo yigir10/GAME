@@ -37,6 +37,7 @@ public class GameObject {
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = boxShape;
         fixtureDef.isSensor = isSensor;
+        fixtureDef.density = 1.0f; // ВАЖНО: без плотности импульс не будет работать!
         fixtureDef.filter.categoryBits = cBits;
         fixtureDef.filter.maskBits = maskBits;
 
@@ -58,7 +59,7 @@ public class GameObject {
                    angle);
     }
 
-    public void hit() {}
+    public void hit(GameObject other) {}
 
     public int getX() { return (int) (body.getPosition().x / GameSettings.SCALE); }
     public int getY() { return (int) (body.getPosition().y / GameSettings.SCALE); }
