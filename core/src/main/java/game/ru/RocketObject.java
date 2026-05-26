@@ -18,7 +18,7 @@ public class RocketObject extends GameObject {
     private float speed;
 
     public RocketObject(int yPixels, Animation<TextureRegion> animation, Texture warningIcon, float speed, World world) {
-        super(animation.getKeyFrame(0).getTexture(), GameSettings.SCREEN_WIDTH + 100, yPixels, 100, 50, GameSettings.LASER_BIT, world, true, 0.8f, 0.5f, GameSettings.JETPACK_BIT);
+        super(animation.getKeyFrame(0).getTexture(), GameSettings.SCREEN_WIDTH + 100, yPixels, 100, 50, GameSettings.ROCKET_BIT, world, true, 0.8f, 0.5f, GameSettings.JETPACK_BIT);
         this.animation = animation;
         this.warningIcon = warningIcon;
         this.warningTimer = 2.0f;
@@ -31,17 +31,22 @@ public class RocketObject extends GameObject {
         stateTime += delta;
         if (!isLaunched) {
             warningTimer -= delta;
-            if (warningTimer <= 0) {
-                isLaunched = true;
-            }
+
+            // Пока не запущена, следуем за игроком по Y
             float targetY = playerPosMeters.y;
             float currentY = body.getPosition().y;
-            float newY = currentY + (targetY - currentY) * delta * 3f;
-            body.setTransform(body.getPosition().x, newY, 0);
-        } else {
-            float x = body.getPosition().x - speed * delta * GameSettings.SCALE;
-            body.setTransform(x, body.getPosition().y, 0);
+            float velY = (targetY - currentY) * 5f;
 
+            if (warningTimer <= 0) {
+                isLaunched = true;
+                // При запуске задаем горизонтальную скорость и останавливаем вертикальное слежение
+                body.setLinearVelocity(-speed * GameSettings.SCALE, 0);
+            } else {
+                // Если еще не запущена, движемся только по вертикали
+                body.setLinearVelocity(0, velY);
+            }
+        } else {
+            // После запуска летит с установленной скоростью. Проверяем выход за экран.
             if (getX() < -width) {
                 active = false;
             }

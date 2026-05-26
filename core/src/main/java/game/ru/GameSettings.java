@@ -32,5 +32,7 @@ public class GameSettings {
     public static final int COIN_WIDTH = 60;
     public static final short COIN_BIT = 16;
 
+    public static final short ROCKET_BIT = 32;
+
     public static final short BOUNDS_BIT = 1;
 }

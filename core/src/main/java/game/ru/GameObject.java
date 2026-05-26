@@ -12,7 +12,7 @@ import com.badlogic.gdx.physics.box2d.World;
 public class GameObject {
     Texture texture;
     public Body body;
-    int width, height;
+    public int width, height;
     public short cBits;
 
     GameObject(String texturePath, int x, int y, int width, int height, short cBits, World world) {

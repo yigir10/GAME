@@ -49,7 +49,9 @@ public class CasinoScreen extends ScreenAdapter {
         this.game = game;
         this.background = new Texture(GameResources.MENU_BACKGROUND_PATH);
         this.menuButton = new Texture(GameResources.MAIN_MENU_BUTTON_PATH);
+        this.menuButton.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
         this.spinButton = new Texture(GameResources.SPIN_BUTTON_PATH);
+        this.spinButton.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
         this.settingsButton = new Texture(GameResources.SETTINGS_BUTTON_PATH);
         this.coinIcon = new Texture(GameResources.COIN_ICON_PATH);
         this.rocketSymbol = new Texture(GameResources.ROCKET_IMG_PATH);
@@ -133,11 +135,6 @@ public class CasinoScreen extends ScreenAdapter {
             float x = startX + i * (slotSize + 20);
             float y = 750;
 
-            // Рамка слота
-            game.batch.setColor(Color.DARK_GRAY);
-            game.batch.draw(coinIcon, x - 5, y - 5, slotSize + 10, slotSize + 10);
-            game.batch.setColor(Color.WHITE);
-
             if (isSpinning) {
                 TextureRegion frame = coinAnimation.getKeyFrame(stateTime + i * 0.2f);
                 game.batch.draw(frame, x, y, slotSize, slotSize);
@@ -204,13 +201,10 @@ public class CasinoScreen extends ScreenAdapter {
         int win = 0;
         if (currentSymbols[0] == currentSymbols[1] && currentSymbols[1] == currentSymbols[2]) {
             int type = currentSymbols[0];
-            if (type == 0) win = 500;      // 3 монеты
-            else if (type == 1) win = 300; // 3 ракеты
-            else win = 200;                // 3 значка настроек
+            if (type == 0) win = 300;      // 3 монеты
+            else if (type == 1) win = 150; // 3 ракеты
+            else win = 100;                // 3 значка настроек
             resultMessage = "JACKPOT! +" + win;
-        } else if (currentSymbols[0] == currentSymbols[1] || currentSymbols[1] == currentSymbols[2] || currentSymbols[0] == currentSymbols[2]) {
-            win = 40; // 2 одинаковых
-            resultMessage = "WIN! +" + win;
         } else {
             resultMessage = "Try again!";
         }

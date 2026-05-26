@@ -19,7 +19,7 @@ public class JetPackObject extends GameObject {
     public boolean isDead = false;
 
     public JetPackObject(int x, int y, int width, int height, Animation<TextureRegion> animation, World world, GameScreen gameScreen) {
-        super(animation.getKeyFrame(0).getTexture(), x, y, width, height, GameSettings.JETPACK_BIT, world, false, 0.6f, 1.0f, (short)(GameSettings.BOUNDS_BIT | GameSettings.LASER_BIT | GameSettings.COIN_BIT));
+        super(animation.getKeyFrame(0).getTexture(), x, y, width, height, GameSettings.JETPACK_BIT, world, false, 0.6f, 1.0f, (short)(GameSettings.BOUNDS_BIT | GameSettings.LASER_BIT | GameSettings.COIN_BIT | GameSettings.ROCKET_BIT));
         this.animation = animation;
         this.gameScreen = gameScreen;
         this.stateTime = 0;
