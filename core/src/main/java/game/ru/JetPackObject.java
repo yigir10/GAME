@@ -59,7 +59,6 @@ public class JetPackObject extends GameObject {
         shapeRenderer.setProjectionMatrix(batch.getProjectionMatrix());
 
         Gdx.gl.glEnable(Gdx.gl20.GL_BLEND);
-        // 1. Отрисовка щита
         if (shieldCharges > 0) {
             shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
             shapeRenderer.setColor(Color.CYAN);
@@ -68,7 +67,6 @@ public class JetPackObject extends GameObject {
             shapeRenderer.end();
         }
 
-        // 2. Радиус магнита
         int magnetLevel = GameState.getMagnetLevel();
         if (magnetLevel > 0) {
             shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
@@ -91,7 +89,7 @@ public class JetPackObject extends GameObject {
                     shieldCharges--;
                     if (other instanceof LaserObject) ((LaserObject)other).active = false;
                     else ((RocketObject)other).active = false;
-                    gameScreen.triggerFlash(); // Эффект вспышки в GameScreen
+                    gameScreen.triggerFlash();
                 } else {
                     isDead = true;
                 }

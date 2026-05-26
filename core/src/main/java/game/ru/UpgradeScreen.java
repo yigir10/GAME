@@ -42,9 +42,8 @@ public class UpgradeScreen extends ScreenAdapter {
 
         float btnWidth = 280;
         float btnHeight = 100;
-
-        // Кнопки сдвинуты еще правее (580)
         float buttonsX = 350;
+
         this.jumpUpgradeBounds = new Rectangle(buttonsX, 800, btnWidth, btnHeight);
         this.coinUpgradeBounds = new Rectangle(buttonsX, 650, btnWidth, btnHeight);
         this.magnetUpgradeBounds = new Rectangle(buttonsX, 500, btnWidth, btnHeight);
@@ -54,14 +53,10 @@ public class UpgradeScreen extends ScreenAdapter {
         this.font = FontBuilder.buildFont(1.5f, Color.WHITE);
         this.layout = new GlyphLayout();
 
-        try {
-            buySound = Gdx.audio.newSound(Gdx.files.internal(GameResources.SOUND_COIN));
-            backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal(GameResources.MUSIC_MAIN));
-            backgroundMusic.setLooping(true);
-            if (GameState.isMusicOn()) backgroundMusic.play();
-        } catch (Exception e) {
-            Gdx.app.log("UpgradeScreen", "Audio resources missing");
-        }
+        buySound = Gdx.audio.newSound(Gdx.files.internal(GameResources.SOUND_COIN));
+        backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal(GameResources.MUSIC_MAIN));
+        backgroundMusic.setLooping(true);
+        if (GameState.isMusicOn()) backgroundMusic.play();
     }
 
     @Override
@@ -77,13 +72,11 @@ public class UpgradeScreen extends ScreenAdapter {
         layout.setText(font, "SHOP");
         font.draw(game.batch, layout, GameSettings.SCREEN_WIDTH / 2f - layout.width / 2f, GameSettings.SCREEN_HEIGHT - 40);
 
-        // БАЛАНС (Top Left)
         float coinBaselineY = GameSettings.SCREEN_HEIGHT - 160;
         game.batch.draw(coinIcon, 30, coinBaselineY + 5, 50, 50);
         FontBuilder.setScale(font, 1.8f);
         font.draw(game.batch, ": " + GameState.getTotalCoins(), 90, coinBaselineY + 50);
 
-        // Отрисовка элементов
         drawUpgradeItem("JETPACK", "FORCE", GameState.getJumpLevel(), GameState.getUpgradeCost(GameState.getJumpLevel(), BASE_COST_JUMP), jumpUpgradeBounds);
         drawUpgradeItem("COINS", "BONUS", GameState.getCoinLevel(), GameState.getUpgradeCost(GameState.getCoinLevel(), BASE_COST_COIN), coinUpgradeBounds);
         drawUpgradeItem("MAGNET", "RANGE", GameState.getMagnetLevel(), GameState.getUpgradeCost(GameState.getMagnetLevel(), BASE_COST_MAGNET), magnetUpgradeBounds);
@@ -123,7 +116,6 @@ public class UpgradeScreen extends ScreenAdapter {
     private void drawUpgradeItem(String title, String desc, int level, int cost, Rectangle bounds) {
         game.batch.draw(upgradeButton, bounds.x, bounds.y, bounds.width, bounds.height);
 
-        // Подписи СЛЕВА от кнопок
         font.setColor(Color.WHITE);
         FontBuilder.setScale(font, 1.7f);
         font.draw(game.batch, title, 10, bounds.y + 80);
@@ -131,7 +123,6 @@ public class UpgradeScreen extends ScreenAdapter {
         font.setColor(Color.LIGHT_GRAY);
         font.draw(game.batch, desc, 10, bounds.y + 35);
 
-        // Уровень и цена - Слева от кнопок (инфо блок)
         float infoX = bounds.x - 145;
 
         font.setColor(Color.CYAN);

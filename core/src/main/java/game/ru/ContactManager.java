@@ -7,9 +7,7 @@ import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.World;
 
-
 public class ContactManager {
-
     public ContactManager(World world) {
         world.setContactListener(new ContactListener() {
             @Override
@@ -17,7 +15,6 @@ public class ContactManager {
                 Fixture fixA = contact.getFixtureA();
                 Fixture fixB = contact.getFixtureB();
 
-                // Получаем объекты, которые столкнулись
                 Object dataA = fixA.getUserData();
                 Object dataB = fixB.getUserData();
 
@@ -25,7 +22,6 @@ public class ContactManager {
                     GameObject objA = (GameObject) dataA;
                     GameObject objB = (GameObject) dataB;
 
-                    // Вызываем метод hit у обоих объектов, передавая соседа
                     objA.hit(objB);
                     objB.hit(objA);
                 }

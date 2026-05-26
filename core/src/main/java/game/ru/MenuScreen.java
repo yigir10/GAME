@@ -39,22 +39,15 @@ public class MenuScreen extends ScreenAdapter {
         float btnHeight = 120;
         float centerX = GameSettings.SCREEN_WIDTH / 2f - btnWidth / 2f;
 
-        // Расположение кнопок по вертикали
         this.playButtonBounds = new Rectangle(centerX, 750, btnWidth, btnHeight);
         this.upgradeButtonBounds = new Rectangle(centerX, 600, btnWidth, btnHeight);
         this.casinoButtonBounds = new Rectangle(centerX, 450, btnWidth, btnHeight);
         this.quitButtonBounds = new Rectangle(centerX, 300, btnWidth, btnHeight);
-
-        // Кнопка настроек в углу
         this.settingsButtonBounds = new Rectangle(GameSettings.SCREEN_WIDTH - 110, 20, 90, 90);
 
-        try {
-            menuMusic = Gdx.audio.newMusic(Gdx.files.internal(GameResources.MUSIC_MAIN));
-            menuMusic.setLooping(true);
-            if (GameState.isMusicOn()) menuMusic.play();
-        } catch (Exception e) {
-            Gdx.app.log("MenuScreen", "Music missing");
-        }
+        menuMusic = Gdx.audio.newMusic(Gdx.files.internal(GameResources.MUSIC_MAIN));
+        menuMusic.setLooping(true);
+        if (GameState.isMusicOn()) menuMusic.play();
     }
 
     @Override
@@ -66,23 +59,16 @@ public class MenuScreen extends ScreenAdapter {
         game.batch.begin();
         game.batch.draw(background, 0, 0, GameSettings.SCREEN_WIDTH, GameSettings.SCREEN_HEIGHT);
 
-        // Отрисовка кнопок
         game.batch.draw(playButton, playButtonBounds.x, playButtonBounds.y, playButtonBounds.width, playButtonBounds.height);
         game.batch.draw(upgradeButton, upgradeButtonBounds.x, upgradeButtonBounds.y, upgradeButtonBounds.width, upgradeButtonBounds.height);
         game.batch.draw(casinoButton, casinoButtonBounds.x, casinoButtonBounds.y, casinoButtonBounds.width, casinoButtonBounds.height);
         game.batch.draw(quitButton, quitButtonBounds.x, quitButtonBounds.y, quitButtonBounds.width, quitButtonBounds.height);
         game.batch.draw(settingsButton, settingsButtonBounds.x, settingsButtonBounds.y, settingsButtonBounds.width, settingsButtonBounds.height);
 
-        // --- ИСПРАВЛЕНИЕ ЛЕВОГО ВЕРХНЕГО УГЛА ---
-
-        // 1. Рекорд (верхняя строка)
         font.setColor(Color.GOLD);
         font.draw(game.batch, "BEST: " + GameState.getHighScore() + "m", 30, GameSettings.SCREEN_HEIGHT - 40);
 
-        // 2. Монеты (вторая строка, опускаем ниже чтобы не было наложения)
         float coinY = GameSettings.SCREEN_HEIGHT - 160;
-        // Иконка (55x55). Выравниваем по центру текста: Y_текста - Высота_текста/2 - Высота_иконки/2
-        // С учетом вертикального растяжения Cap Height шрифта (75px), опускаем иконку на 65px от верха текста
         game.batch.draw(coinIcon, 30, coinY - 65, 55, 55);
         font.setColor(Color.WHITE);
         font.draw(game.batch, ": " + GameState.getTotalCoins(), 95, coinY);

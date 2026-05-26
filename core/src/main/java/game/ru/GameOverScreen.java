@@ -19,7 +19,6 @@ public class GameOverScreen extends ScreenAdapter {
     private final Rectangle retryButtonBounds, menuButtonBounds, reviveButtonBounds;
     private final BitmapFont font;
     private final GlyphLayout layout;
-
     private Music backgroundMusic;
     private final int REVIVE_COST = 100;
     private boolean canRevive;
@@ -33,26 +32,17 @@ public class GameOverScreen extends ScreenAdapter {
         this.menuButton = new Texture(GameResources.MAIN_MENU_BUTTON_PATH);
         this.reviveButton = new Texture(GameResources.RESUME_BUTTON_PATH);
         this.coinIcon = new Texture(GameResources.COIN_ICON_PATH);
-
         this.canRevive = GameState.getTotalCoins() >= REVIVE_COST;
-
         float btnWidth = 350;
         float btnHeight = 110;
         float centerX = GameSettings.SCREEN_WIDTH / 2f - btnWidth / 2f;
-
         this.reviveButtonBounds = new Rectangle(centerX, 600, btnWidth, btnHeight);
         this.retryButtonBounds = new Rectangle(centerX, 450, btnWidth, btnHeight);
         this.menuButtonBounds = new Rectangle(centerX, 300, btnWidth, btnHeight);
-
         this.font = FontBuilder.buildFont(1.5f, Color.WHITE);
         this.layout = new GlyphLayout();
-
-        try {
-            backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal(GameResources.MUSIC_MAIN));
-            backgroundMusic.setLooping(true);
-        } catch (Exception e) {
-            Gdx.app.log("GameOverScreen", "Music missing");
-        }
+        backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal(GameResources.MUSIC_MAIN));
+        backgroundMusic.setLooping(true);
     }
 
     @Override
@@ -74,23 +64,15 @@ public class GameOverScreen extends ScreenAdapter {
         ScreenUtils.clear(Color.BLACK);
         game.camera.update();
         game.batch.setProjectionMatrix(game.camera.combined);
-
         game.batch.begin();
         game.batch.draw(background, 0, 0, GameSettings.SCREEN_WIDTH, GameSettings.SCREEN_HEIGHT);
-
         FontBuilder.setScale(font, 4.0f);
         layout.setText(font, "GAME OVER");
         font.draw(game.batch, layout, GameSettings.SCREEN_WIDTH / 2f - layout.width / 2f, GameSettings.SCREEN_HEIGHT * 0.92f);
-
-        // Статистика
         FontBuilder.setScale(font, 2.0f);
         font.draw(game.batch, "Dist: " + distance + "m", 50, GameSettings.SCREEN_HEIGHT - 150);
-
-        // Иконка монеты
         game.batch.draw(coinIcon, 50, GameSettings.SCREEN_HEIGHT - 240, 40, 40);
         font.draw(game.batch, ": " + coins, 100, GameSettings.SCREEN_HEIGHT - 200);
-
-        // Кнопки
         if (canRevive) {
             game.batch.draw(reviveButton, reviveButtonBounds.x, reviveButtonBounds.y, reviveButtonBounds.width, reviveButtonBounds.height);
         } else {
@@ -98,16 +80,12 @@ public class GameOverScreen extends ScreenAdapter {
             game.batch.draw(reviveButton, reviveButtonBounds.x, reviveButtonBounds.y, reviveButtonBounds.width, reviveButtonBounds.height);
             game.batch.setColor(Color.WHITE);
         }
-
         game.batch.draw(retryButton, retryButtonBounds.x, retryButtonBounds.y, retryButtonBounds.width, retryButtonBounds.height);
         game.batch.draw(menuButton, menuButtonBounds.x, menuButtonBounds.y, menuButtonBounds.width, menuButtonBounds.height);
-
         game.batch.end();
-
         if (Gdx.input.justTouched()) {
             game.touch.set(Gdx.input.getX(), Gdx.input.getY(), 0);
             game.camera.unproject(game.touch);
-
             if (canRevive && reviveButtonBounds.contains(game.touch.x, game.touch.y)) {
                 GameState.spendCoins(REVIVE_COST);
                 GameSession revivedSession = new GameSession();

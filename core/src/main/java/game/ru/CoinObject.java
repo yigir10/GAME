@@ -18,40 +18,31 @@ public class CoinObject extends GameObject {
         super(animation.getKeyFrame(0).getTexture(), x, y, width, height, GameSettings.COIN_BIT, world, true, 0.8f, 0.8f, GameSettings.JETPACK_BIT);
         this.animation = animation;
         this.stateTime = 0;
-
         body.setType(BodyDef.BodyType.KinematicBody);
     }
 
     public void update(float delta, Vector2 playerPos) {
         stateTime += delta;
-
         Vector2 currentPos = body.getPosition();
         float targetX = currentPos.x - GameSettings.GAME_SPEED * delta * GameSettings.SCALE;
         float targetY = currentPos.y;
 
-        // Логика Магнита
         int magnetLevel = GameState.getMagnetLevel();
         if (magnetLevel > 0) {
             float radius = (150f + magnetLevel * 50f) * GameSettings.SCALE;
             float dist = currentPos.dst(playerPos);
-
             if (dist < radius) {
-                // Притягиваем монетку к игроку
                 float pullSpeed = (GameSettings.GAME_SPEED * 1.5f) * GameSettings.SCALE;
                 Vector2 direction = new Vector2(playerPos).sub(currentPos).nor();
                 targetX = currentPos.x + direction.x * pullSpeed * delta;
                 targetY = currentPos.y + direction.y * pullSpeed * delta;
-
-                // Эффект пульсации
                 pulseTime += delta * 10f;
                 currentScale = 1.0f + (float) Math.sin(pulseTime) * 0.2f;
             } else {
                 currentScale = 1.0f;
             }
         }
-
         body.setTransform(targetX, targetY, 0);
-
         if (getX() < -width) {
             active = false;
         }
@@ -61,8 +52,6 @@ public class CoinObject extends GameObject {
     public void draw(SpriteBatch batch) {
         TextureRegion currentFrame = animation.getKeyFrame(stateTime, true);
         float angle = (float) Math.toDegrees(body.getAngle());
-
-        // Отрисовка с учетом пульсации (масштаба)
         batch.draw(currentFrame,
                    getX() - (width * currentScale / 2f), getY() - (height * currentScale / 2f),
                    (width * currentScale) / 2f, (height * currentScale) / 2f,

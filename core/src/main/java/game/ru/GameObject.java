@@ -37,7 +37,7 @@ public class GameObject {
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = boxShape;
         fixtureDef.isSensor = isSensor;
-        fixtureDef.density = 1.0f; // ВАЖНО: без плотности импульс не будет работать!
+        fixtureDef.density = 1.0f;
         fixtureDef.filter.categoryBits = cBits;
         fixtureDef.filter.maskBits = maskBits;
 

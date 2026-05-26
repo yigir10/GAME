@@ -32,21 +32,17 @@ public class RocketObject extends GameObject {
         if (!isLaunched) {
             warningTimer -= delta;
 
-            // Пока не запущена, следуем за игроком по Y
             float targetY = playerPosMeters.y;
             float currentY = body.getPosition().y;
             float velY = (targetY - currentY) * 5f;
 
             if (warningTimer <= 0) {
                 isLaunched = true;
-                // При запуске задаем горизонтальную скорость и останавливаем вертикальное слежение
                 body.setLinearVelocity(-speed * GameSettings.SCALE, 0);
             } else {
-                // Если еще не запущена, движемся только по вертикали
                 body.setLinearVelocity(0, velY);
             }
         } else {
-            // После запуска летит с установленной скоростью. Проверяем выход за экран.
             if (getX() < -width) {
                 active = false;
             }

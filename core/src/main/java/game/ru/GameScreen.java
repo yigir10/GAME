@@ -119,18 +119,13 @@ public class GameScreen extends ScreenAdapter {
         new ContactManager(world);
         createBounds();
 
-        // Аудио
-        try {
-            coinSound = Gdx.audio.newSound(Gdx.files.internal(GameResources.SOUND_COIN));
-            hitSound = Gdx.audio.newSound(Gdx.files.internal(GameResources.SOUND_HIT));
-            jumpSound = Gdx.audio.newSound(Gdx.files.internal(GameResources.SOUND_JUMP));
-            launchSound = Gdx.audio.newSound(Gdx.files.internal(GameResources.SOUND_ROCKET_LAUNCH));
-            warningSound = Gdx.audio.newSound(Gdx.files.internal(GameResources.SOUND_ROCKET_WARNING));
-            backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal(GameResources.MUSIC_MAIN));
-            backgroundMusic.setLooping(true);
-        } catch (Exception e) {
-            Gdx.app.log("GameScreen", "Audio resources missing");
-        }
+        coinSound = Gdx.audio.newSound(Gdx.files.internal(GameResources.SOUND_COIN));
+        hitSound = Gdx.audio.newSound(Gdx.files.internal(GameResources.SOUND_HIT));
+        jumpSound = Gdx.audio.newSound(Gdx.files.internal(GameResources.SOUND_JUMP));
+        launchSound = Gdx.audio.newSound(Gdx.files.internal(GameResources.SOUND_ROCKET_LAUNCH));
+        warningSound = Gdx.audio.newSound(Gdx.files.internal(GameResources.SOUND_ROCKET_WARNING));
+        backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal(GameResources.MUSIC_MAIN));
+        backgroundMusic.setLooping(true);
     }
 
     @Override
@@ -348,14 +343,10 @@ public class GameScreen extends ScreenAdapter {
             font.draw(myGdxGame.batch, ft.text, ft.x, ft.y);
         }
 
-        // --- ИСПРАВЛЕНИЕ ЛЕВОГО ВЕРХНЕГО УГЛА ---
         font.setColor(Color.WHITE);
-        // 1. Дистанция (верхняя строка)
         font.draw(myGdxGame.batch, "Distance: " + gameSession.distance + "m", 30, GameSettings.SCREEN_HEIGHT - 50);
 
-        // 2. Монеты сессии (вторая строка, отступ 100 пикселей)
         float coinTextY = GameSettings.SCREEN_HEIGHT - 150;
-        // Иконка (50x50). Центрируем: Y_текста - 37 (центр текста) - 25 (половина иконки) = -62
         myGdxGame.batch.draw(coinIcon, 30, coinTextY - 62, 50, 50);
         font.draw(myGdxGame.batch, ": " + gameSession.coins, 95, coinTextY);
 

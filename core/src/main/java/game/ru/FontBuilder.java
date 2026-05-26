@@ -4,8 +4,6 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 
 public class FontBuilder {
-    // Коэффициенты компенсации для типичного растяжения (сужаем по X и вытягиваем по Y)
-    // Увеличиваем Y относительно X, чтобы убрать эффект растянутости по горизонтали на мониторах
     private static final float COMP_X = 1.0f;
     private static final float COMP_Y = 2.0f;
 

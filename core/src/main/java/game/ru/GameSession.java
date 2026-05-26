@@ -5,8 +5,6 @@ public class GameSession {
     public int coins = 0;
     public boolean isGameOver = false;
     public boolean usedRevive = false;
-
-    // Комбо-система
     public int combo = 0;
     public float comboTimer = 0;
     public final float COMBO_DURATION = 2.0f;

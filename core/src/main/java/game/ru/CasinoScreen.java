@@ -39,7 +39,7 @@ public class CasinoScreen extends ScreenAdapter {
     private float stateTime = 0;
     private final ArrayList<Texture> textures = new ArrayList<>();
 
-    private final int[] currentSymbols = {0, 0, 0}; // 0: Coin, 1: Rocket, 2: Settings
+    private final int[] currentSymbols = {0, 0, 0};
     private String resultMessage = "LUCKY SPIN";
     private float spinTimer = 0;
     private boolean isSpinning = false;
@@ -67,7 +67,6 @@ public class CasinoScreen extends ScreenAdapter {
         this.font = FontBuilder.buildFont(2.0f, Color.WHITE);
         this.layout = new GlyphLayout();
 
-        // Загрузка анимации для слотов
         Array<TextureRegion> frames = new Array<>();
         for (String path : GameResources.COIN_ANIMATION_PATHS) {
             Texture tex = new Texture(path);
@@ -76,14 +75,10 @@ public class CasinoScreen extends ScreenAdapter {
         }
         coinAnimation = new Animation<>(0.05f, frames, Animation.PlayMode.LOOP);
 
-        try {
-            spinSound = Gdx.audio.newSound(Gdx.files.internal(GameResources.SOUND_JUMP));
-            winSound = Gdx.audio.newSound(Gdx.files.internal(GameResources.SOUND_COIN));
-            backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal(GameResources.MUSIC_MAIN));
-            backgroundMusic.setLooping(true);
-        } catch (Exception e) {
-            Gdx.app.log("CasinoScreen", "Audio missing");
-        }
+        spinSound = Gdx.audio.newSound(Gdx.files.internal(GameResources.SOUND_JUMP));
+        winSound = Gdx.audio.newSound(Gdx.files.internal(GameResources.SOUND_COIN));
+        backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal(GameResources.MUSIC_MAIN));
+        backgroundMusic.setLooping(true);
     }
 
     @Override
@@ -118,17 +113,14 @@ public class CasinoScreen extends ScreenAdapter {
         game.batch.begin();
         game.batch.draw(background, 0, 0, GameSettings.SCREEN_WIDTH, GameSettings.SCREEN_HEIGHT);
 
-        // Header
         FontBuilder.setScale(font, 2.5f);
         layout.setText(font, "CASINO");
         font.draw(game.batch, layout, GameSettings.SCREEN_WIDTH / 2f - layout.width / 2f, GameSettings.SCREEN_HEIGHT - 30);
 
-        // БАЛАНС
         game.batch.draw(coinIcon, 30, GameSettings.SCREEN_HEIGHT - 145, 45, 45);
         FontBuilder.setScale(font, 1.8f);
         font.draw(game.batch, ": " + GameState.getTotalCoins(), 85, GameSettings.SCREEN_HEIGHT - 105);
 
-        // Отрисовка слотов
         float slotSize = 130f;
         float startX = GameSettings.SCREEN_WIDTH / 2f - (slotSize * 1.5f) - 20;
         for (int i = 0; i < 3; i++) {
@@ -144,7 +136,6 @@ public class CasinoScreen extends ScreenAdapter {
             }
         }
 
-        // Сообщение результата (вверху барабанов)
         FontBuilder.setScale(font, 2.2f);
         layout.setText(font, resultMessage);
         if (isSpinning) font.setColor(Color.GOLD);
@@ -153,7 +144,6 @@ public class CasinoScreen extends ScreenAdapter {
         font.draw(game.batch, layout, GameSettings.SCREEN_WIDTH / 2f - layout.width / 2f, 1000);
         font.setColor(Color.WHITE);
 
-        // Кнопки
         if (isSpinning) game.batch.setColor(Color.GRAY);
         game.batch.draw(spinButton, spinButtonBounds.x, spinButtonBounds.y, spinButtonBounds.width, spinButtonBounds.height);
         game.batch.setColor(Color.WHITE);
@@ -201,9 +191,9 @@ public class CasinoScreen extends ScreenAdapter {
         int win = 0;
         if (currentSymbols[0] == currentSymbols[1] && currentSymbols[1] == currentSymbols[2]) {
             int type = currentSymbols[0];
-            if (type == 0) win = 300;      // 3 монеты
-            else if (type == 1) win = 150; // 3 ракеты
-            else win = 100;                // 3 значка настроек
+            if (type == 0) win = 300;
+            else if (type == 1) win = 150;
+            else win = 100;
             resultMessage = "JACKPOT! +" + win;
         } else {
             resultMessage = "Try again!";

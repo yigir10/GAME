@@ -15,7 +15,6 @@ public class LaserObject extends GameObject {
         super(animation.getKeyFrame(0).getTexture(), x, y, width, height, GameSettings.LASER_BIT, world, true, 0.3f, 0.8f, GameSettings.JETPACK_BIT);
         this.animation = animation;
         this.stateTime = 0;
-
         body.setType(BodyDef.BodyType.KinematicBody);
     }
 
